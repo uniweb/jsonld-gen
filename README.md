@@ -289,6 +289,71 @@ const messenger = new ParentMessenger({
 
 **Result:** Search engines index the iframe content as if it were native to the parent page. The JSON-LD schemas are automatically injected by frame-bridge, and the Open Graph tags are handled via a custom action.
 
+### Iframe Without frame-bridge (Vanilla postMessage)
+
+If you're not using frame-bridge, you can still use jsonld-gen with vanilla postMessage:
+
+**Child (iframe):**
+
+```javascript
+import { useMetadata } from "@uniweb/jsonld-gen/react";
+import { createPersonSchema, composeSchemas } from "@uniweb/jsonld-gen";
+import { toHTML, metaTagsToHTML } from "@uniweb/jsonld-gen";
+
+function ExpertProfile() {
+  const { data: expert } = useExpert();
+
+  useMetadata({
+    type: "person",
+    data: expert,
+    config,
+    schemas: [createPersonSchema(expert, config)],
+    onGenerate: (schemas, metaTags) => {
+      // Send to parent via postMessage
+      window.parent.postMessage(
+        {
+          type: "UPDATE_METADATA",
+          schemas: schemas,
+          metaTags: metaTags,
+          // Or send pre-rendered HTML
+          schemasHTML: toHTML(schemas),
+          metaTagsHTML: metaTagsToHTML(metaTags),
+        },
+        "https://parent.example.com" // Target origin
+      );
+    },
+  });
+
+  return <div>...</div>;
+}
+```
+
+**Parent:**
+
+```javascript
+import { toHTML, metaTagsToHTML } from "@uniweb/jsonld-gen";
+
+// Listen for metadata from iframe
+window.addEventListener("message", (event) => {
+  // Validate origin
+  if (event.origin !== "https://iframe.example.com") return;
+
+  if (event.data.type === "UPDATE_METADATA") {
+    const { schemas, metaTags, schemasHTML, metaTagsHTML } = event.data;
+
+    // Option 1: Use pre-rendered HTML from child
+    document.head.insertAdjacentHTML("beforeend", schemasHTML);
+    document.head.insertAdjacentHTML("beforeend", metaTagsHTML);
+
+    // Option 2: Generate HTML on parent side
+    // document.head.insertAdjacentHTML("beforeend", toHTML(schemas));
+    // document.head.insertAdjacentHTML("beforeend", metaTagsToHTML(metaTags));
+  }
+});
+```
+
+**Result:** Same SEO benefits without the frame-bridge dependency. You have full control over the communication layer.
+
 ### Static Site Generation
 
 ```javascript

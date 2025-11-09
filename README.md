@@ -224,6 +224,12 @@ When embedding applications in iframes, search engines can't index content insid
 ```javascript
 import { useMetadata } from "@uniweb/jsonld-gen/react";
 import { createPersonSchema } from "@uniweb/jsonld-gen";
+import { ChildMessenger } from "@uniweb/frame-bridge/child";
+
+// Create messenger instance (typically once at app initialization)
+const messenger = new ChildMessenger({
+  allowedOrigins: ["https://parent.example.com"],
+});
 
 function ExpertProfile() {
   const { data: expert } = useExpert();
@@ -234,11 +240,14 @@ function ExpertProfile() {
     config,
     schemas: [createPersonSchema(expert, config)],
     onGenerate: (schemas, metaTags) => {
-      // Send to parent frame for SEO
-      window.FrameBridge.sendToParent("updateMetadata", {
-        schemas,
-        metaTags,
+      // Use frame-bridge's built-in JSON-LD support for schemas
+      // Note: frame-bridge handles one schema at a time
+      schemas.forEach((schema) => {
+        messenger.updateJSONLD(schema);
       });
+
+      // Send meta tags via custom action (not built into frame-bridge)
+      messenger.sendToParent("updateMetaTags", { metaTags });
     },
   });
 
@@ -250,25 +259,22 @@ function ExpertProfile() {
 
 ```javascript
 import { ParentMessenger } from "@uniweb/frame-bridge/parent";
-import { toHTML, metaTagsToHTML } from "@uniweb/jsonld-gen";
+import { metaTagsToHTML } from "@uniweb/jsonld-gen";
 
 const messenger = new ParentMessenger({
+  // frame-bridge automatically injects JSON-LD from child (jsonLD: true is default)
+  jsonLD: true,
+
+  // Handle meta tags via custom action
   actionHandlers: {
-    updateMetadata: (iframeId, { schemas, metaTags }) => {
-      // Inject metadata from iframe into parent <head>
-      const existingJsonLd = document.querySelectorAll(
-        `script[type="application/ld+json"][data-iframe-id="${iframeId}"]`
-      );
-      existingJsonLd.forEach((el) => el.remove());
-
-      document.head.insertAdjacentHTML("beforeend", toHTML(schemas, iframeId));
-
-      // Update OG tags
+    updateMetaTags: (iframeId, { metaTags }) => {
+      // Remove existing meta tags from this iframe
       const existingMeta = document.querySelectorAll(
         `meta[data-iframe-id="${iframeId}"]`
       );
       existingMeta.forEach((el) => el.remove());
 
+      // Inject new meta tags with iframe ID for tracking
       const metaHTML = metaTagsToHTML(metaTags).replace(
         /<meta /g,
         `<meta data-iframe-id="${iframeId}" `
@@ -281,7 +287,7 @@ const messenger = new ParentMessenger({
 });
 ```
 
-Result: Search engines index the iframe content as if it were native to the parent page.
+**Result:** Search engines index the iframe content as if it were native to the parent page. The JSON-LD schemas are automatically injected by frame-bridge, and the Open Graph tags are handled via a custom action.
 
 ### Static Site Generation
 

@@ -8,12 +8,6 @@ Generate JSON-LD schemas and Open Graph meta tags for SEO. A lightweight, framew
 npm install @uniweb/jsonld-gen
 ```
 
-For React integration:
-
-```bash
-npm install @uniweb/jsonld-gen react
-```
-
 ## Quick Start
 
 ### Basic Usage
@@ -63,6 +57,8 @@ console.log(metaTags); // Object with meta tag properties
 ```
 
 ### React Hook
+
+React is defined as an optional peer dependency. It must be installed in your project to use the provided hooks.
 
 ```javascript
 import { useMetadata } from "@uniweb/jsonld-gen/react";

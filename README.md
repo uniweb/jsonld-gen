@@ -2,17 +2,6 @@
 
 Generate JSON-LD schemas and Open Graph meta tags for SEO. A lightweight, framework-agnostic library with optional React integration.
 
-## Features
-
-- ✅ **Zero dependencies** in core library
-- ✅ **Framework-agnostic** - works with any JavaScript framework
-- ✅ **TypeScript-ready** via JSDoc comments
-- ✅ **Tree-shakeable** - only import what you need
-- ✅ **SSR-friendly** - works in Node.js and browser
-- ✅ **Pre-built generators** for common schema types
-- ✅ **Lifecycle hooks** for customization
-- ✅ **Presets** for common use casess
-
 ## Installation
 
 ```bash
@@ -264,10 +253,5 @@ const config = {
 ## 🎓 Learning Path
 
 1. **Read [GUIDE.md](GUIDE.md)** - Understand concepts
-2. **Try examples** - See the [examples](./examples) directory for complete working examples.
-3. **Integrate** - Add to your project
-4. **Customize** - Use hooks for specific needs
-
-## License
-
-MIT
+2. **Try examples** - See the [examples](./examples) directory
+3. **Customize** - Use hooks for specific needs

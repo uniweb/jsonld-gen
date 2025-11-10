@@ -90,6 +90,8 @@ No manual JSON-LD writing. No inconsistencies. Type-safe and validated.
 
 ## Installation
 
+**Coming soon (not yet published to npm)**
+
 ```bash
 npm install @uniweb/jsonld-gen
 ```
